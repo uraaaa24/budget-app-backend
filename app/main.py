@@ -1,25 +1,27 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
 
-from app.api.router import api_router
+from app.api import health_router
+from app.core.database import get_db
+from app.core.logging import setup_logging
+from app.middleware import RequestLoggingMiddleware
+
+setup_logging()
 
 app = FastAPI(
     title="Budget App API",
-    description="Budget application backend API",
-    version="0.1.0",
+    description="Personal budget management application",
+    version="1.0.0",
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app.add_middleware(RequestLoggingMiddleware)
 
-app.include_router(api_router, prefix="/api/v1")
+app.include_router(health_router)
 
 
-@app.get("/health")
-def health_check() -> dict[str, str]:
-    return {"status": "healthy"}
+# TODO: An example endpoint to demonstrate database usage
+@app.get("/items")
+def list_items(db: Session = Depends(get_db)):
+    """List all items in the budget."""
+    # db.query(...), db.execute(...), etc.
+    return []

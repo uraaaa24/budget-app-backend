@@ -61,7 +61,7 @@ uv run pytest -k test_name # Run specific test
 
 **Database:** PostgreSQL with psycopg driver
 - Connection via `DB_DSN` environment variable
-- Default: `postgresql://budget:budget@db:5432/budget_app`
+- Default: `postgresql+psycopg://budget:budget@db:5432/budget_app`
 
 **Dependencies:**
 - FastAPI for REST API

@@ -9,15 +9,15 @@ dependencies = [
   "uvicorn[standard]>=0.30.0",
   "psycopg[binary]>=3.2.0",
   "pydantic>=2.8.0",
-  "python-dotenv>=1.0.0",
-  "rich>=13.7.0"
+  "pydantic-settings>=2.10.1",
+  "alembic>=1.13.0",
+  "sqlalchemy>=2.0.0",
 ]
 [tool.mypy]
 strict = true
 
 [dependency-groups]
 dev = [
-    "mypy>=1.17.0",
     "pytest>=8.4.1",
     "pytest-asyncio>=1.1.0",
     "ruff>=0.12.4",
