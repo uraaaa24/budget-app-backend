@@ -9,6 +9,7 @@ from app.domain.transaction.transaction import Transaction
 
 
 class TransactionRepository(BaseRepository[Transaction]):
+    """Repository interface for Transaction entities."""
   
     @abstractmethod
     def find_by_account_and_period(
