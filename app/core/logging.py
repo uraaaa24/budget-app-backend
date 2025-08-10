@@ -10,9 +10,7 @@ def setup_logging() -> logging.Logger:
 
     log_format = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
     if settings.DEBUG:
-        log_format = (
-            "%(asctime)s [%(levelname)s] %(name)s.%(funcName)s:%(lineno)d: %(message)s"
-        )
+        log_format = "%(asctime)s [%(levelname)s] %(name)s.%(funcName)s:%(lineno)d: %(message)s"
 
     logging.basicConfig(
         level=log_level,

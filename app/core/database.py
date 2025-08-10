@@ -16,8 +16,11 @@ _NAMING = {
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
     "pk": "pk_%(table_name)s",
 }
+
+
 class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=_NAMING)
+
 
 class Database:
     def __init__(self, url: str, **pool):
@@ -56,7 +59,9 @@ class Database:
     def dispose(self) -> None:
         self.engine.dispose()
 
+
 db = Database(settings.DATABASE_URL)
+
 
 def get_db() -> Iterator[Session]:
     with db.session() as s:

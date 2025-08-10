@@ -10,13 +10,13 @@ from app.presentation.routes import health_router
 
 def register_app() -> FastAPI:
     """Register the FastAPI application with middleware and routes."""
-  
+
     setup_logging()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         yield
-        db.dispose() 
+        db.dispose()
 
     app = FastAPI(
         title="Budget App API",

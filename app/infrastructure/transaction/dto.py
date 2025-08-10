@@ -12,15 +12,14 @@ from app.domain.transaction.vo import Amount, TransactionType
 
 class TransactionDTO(Base):
     """Data Transfer Object for Transaction entity"""
-    
+
     __tablename__ = "transactions"
 
-    id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True), primary_key=True, default=uuid4
-    )
+    id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), index=True, nullable=False)
     account_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), index=True, nullable=False)
-    type: Mapped[str] = mapped_column(String(7), nullable=False)  
-    amount: Mapped[int] = mapped_column(nullable=False) 
+    type: Mapped[str] = mapped_column(String(7), nullable=False)
+    amount: Mapped[int] = mapped_column(nullable=False)
     occurred_at: Mapped[date] = mapped_column(nullable=False, index=True)
     category_id: Mapped[UUID | None] = mapped_column(
         PG_UUID(as_uuid=True), nullable=True, index=True
@@ -33,14 +32,15 @@ class TransactionDTO(Base):
         """Convert DTO to Transaction entity."""
         return Transaction(
             id=self.id,
+            user_id=self.user_id,
             account_id=self.account_id,
             type=TransactionType(self.type),
             amount=Amount(self.amount),
             occurred_at=self.occurred_at,
             category_id=self.category_id,
-            description=self.description,
+            description=self.description or "",
             created_at=self.created_at,
-            updated_at=self.updated_at
+            updated_at=self.updated_at,
         )
 
     @staticmethod
@@ -48,6 +48,7 @@ class TransactionDTO(Base):
         """Create DTO from Transaction entity."""
         return TransactionDTO(
             id=transaction.id,
+            user_id=transaction.user_id,
             account_id=transaction.account_id,
             type=transaction.type.value,
             amount=transaction.amount.value,
@@ -55,5 +56,5 @@ class TransactionDTO(Base):
             category_id=transaction.category_id,
             description=transaction.description,
             created_at=transaction.created_at,
-            updated_at=transaction.updated_at
+            updated_at=transaction.updated_at,
         )

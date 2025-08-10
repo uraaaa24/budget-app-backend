@@ -10,8 +10,11 @@ from app.domain.transaction.transaction import Transaction
 
 class TransactionRepository(BaseRepository[Transaction]):
     """Repository interface for Transaction entities."""
-  
+
     @abstractmethod
     def find_by_account_and_period(
         self, account_id: UUID, start: date, end: date
     ) -> Iterable[Transaction]: ...
+
+    @abstractmethod
+    def find_by_user_id(self, user_id: UUID) -> list[Transaction]: ...
