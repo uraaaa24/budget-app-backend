@@ -1,50 +1,63 @@
 from __future__ import annotations
 
-from typing import Generator
+from collections.abc import Iterator
+from contextlib import contextmanager
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import MetaData, create_engine, text
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.core.config import settings
 
-DATABASE_URL = settings.DATABASE_URL
-
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,
-    pool_recycle=1800,
-    future=True,
-)
-
-
+_NAMING = {
+    "ix": "ix_%(table_name)s_%(column_0_name)s",
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s",
+}
 class Base(DeclarativeBase):
-    """全モデルが継承する Base"""
+    metadata = MetaData(naming_convention=_NAMING)
 
-    pass
+class Database:
+    def __init__(self, url: str, **pool):
+        self.engine: Engine = create_engine(
+            url,
+            pool_pre_ping=True,
+            pool_recycle=pool.get("recycle", 1800),
+            pool_size=pool.get("size", 5),
+            max_overflow=pool.get("max_overflow", 10),
+            pool_timeout=pool.get("timeout", 30),
+            echo=getattr(settings, "DB_ECHO", False),
+        )
+        self.SessionLocal = sessionmaker(
+            bind=self.engine,
+            autoflush=False,
+            expire_on_commit=False,
+        )
 
+    @contextmanager
+    def session(self) -> Iterator[Session]:
+        with self.SessionLocal() as db:
+            try:
+                yield db
+                db.commit()
+            except Exception:
+                db.rollback()
+                raise
 
-SessionLocal = sessionmaker(
-    bind=engine,
-    autoflush=False,
-    autocommit=False,
-    expire_on_commit=False,
-)
+    def ping(self) -> bool:
+        try:
+            with self.engine.connect() as conn:
+                return conn.execute(text("SELECT 1")).scalar_one() == 1
+        except Exception:
+            return False
 
+    def dispose(self) -> None:
+        self.engine.dispose()
 
-def get_db() -> Generator[Session, None, None]:
-    """DB Session for Dependency Injection"""
-    db = SessionLocal()
-    try:
-        yield db
-        db.commit()
-    except Exception:
-        db.rollback()
-        raise
-    finally:
-        db.close()
+db = Database(settings.DATABASE_URL)
 
-
-def ping_db() -> bool:
-    """Check if the database is reachable."""
-    with engine.connect() as conn:
-        return conn.execute(text("SELECT 1")).scalar_one() == 1
+def get_db() -> Iterator[Session]:
+    with db.session() as s:
+        yield s

@@ -6,8 +6,11 @@ T = TypeVar("T")
 
 class BaseRepository(ABC, Generic[T]):
     @abstractmethod
-    def save(self, entity: T) -> None: ...
-    
+    def add(self, entity: T) -> None: ...
+   
+    @abstractmethod
+    def update(self, entity: T) -> None: ...
+
     @abstractmethod
     def find_by_id(self, entity_id: UUID) -> T | None: ...
     
