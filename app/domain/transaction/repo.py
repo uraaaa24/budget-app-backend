@@ -1,7 +1,7 @@
 # domain/transactions/repositories/transaction_repository.py
 from abc import abstractmethod
+from collections.abc import Iterable
 from datetime import date
-from typing import Iterable
 from uuid import UUID
 
 from app.domain.base_repo import BaseRepository

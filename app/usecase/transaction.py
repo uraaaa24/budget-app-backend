@@ -75,7 +75,6 @@ def update_transaction(
         updated_at=current_transaction.updated_at,
     )
     repo.update(new_transaction)
-    return
 
 
 def get_user_transactions(session: Session, user_id: UUID) -> list[Transaction]:

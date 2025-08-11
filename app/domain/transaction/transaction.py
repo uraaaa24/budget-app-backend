@@ -21,7 +21,6 @@ class Transaction(BaseEntity):
     @classmethod
     def create(
         cls,
-        *,
         user_id: UUID,
         account_id: UUID,
         type: TransactionType,
