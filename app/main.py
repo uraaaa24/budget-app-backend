@@ -1,8 +1,8 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from app.core import register_app
 from app.core.database import get_db
+from app.core.register_app import register_app
 
 app = register_app()
 

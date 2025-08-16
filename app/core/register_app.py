@@ -27,4 +27,5 @@ def register_app() -> FastAPI:
 
     app.add_middleware(RequestLoggingMiddleware)
     app.include_router(health_router)
+
     return app

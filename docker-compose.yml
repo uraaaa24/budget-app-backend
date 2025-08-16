@@ -5,26 +5,34 @@ services:
       POSTGRES_DB: budget_app
       POSTGRES_USER: budget
       POSTGRES_PASSWORD: budget
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U budget -d budget_app"]
       interval: 5s
       timeout: 5s
-      retries: 5
-      start_period: 10s
+      retries: 10
+      start_period: 20s
 
   api:
-    build: .
-    ports:
-      - "8000:80"
-    env_file:
-      - .env
-    command: sh -c "uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port 80"
-    restart: unless-stopped
+    build:
+      context: .
+    working_dir: /app
+    environment:
+      DATABASE_URL: postgresql+psycopg://budget:budget@db:5432/budget_app
     depends_on:
       db:
         condition: service_healthy
+    command: >
+      bash -lc "./scripts/setup.sh &&
+                uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app:cached
+    restart: "no"
 
 volumes:
   postgres_data:
