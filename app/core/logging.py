@@ -25,7 +25,7 @@ def setup_logging() -> logging.Logger:
     _configure_sqlalchemy_logging()
 
     logger = logging.getLogger("app")
-    logger.info(f"🚀 Starting {settings.APP_NAME} (Debug: {settings.DEBUG})")
+    logger.info(f"🚀 Starting Budget App (Debug: {settings.DEBUG})")
 
     return logger
 
