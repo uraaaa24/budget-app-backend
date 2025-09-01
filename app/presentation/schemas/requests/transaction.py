@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class CreateTransactionSchema(BaseModel):
+class CreateTransactionRequestSchema(BaseModel):
     """Schema for creating a new transaction."""
 
     account_id: str

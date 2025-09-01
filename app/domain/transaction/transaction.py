@@ -9,12 +9,12 @@ from app.domain.transaction.transaction_value_objects import Amount, Transaction
 class Transaction:
     """Entity representing a financial transaction."""
 
-    id: UUID = field(default_factory=uuid4)
     user_id: UUID
     account_id: UUID
     type: TransactionType
     amount: Amount
     occurred_at: date
+    id: UUID = field(default_factory=uuid4)
     category_id: UUID | None = None
     description: str = ""
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))

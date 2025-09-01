@@ -81,3 +81,7 @@ class TransactionRepositoryImpl(TransactionRepository):
             .all()
         )
         return [row.to_entity() for row in rows]
+
+
+def new_transaction_repository(session: Session) -> TransactionRepository:
+    return TransactionRepositoryImpl(session)
