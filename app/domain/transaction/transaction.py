@@ -1,15 +1,15 @@
-from dataclasses import dataclass
-from datetime import date
-from uuid import UUID
+from dataclasses import dataclass, field
+from datetime import UTC, date, datetime
+from uuid import UUID, uuid4
 
-from app.domain.base_entity import BaseEntity
 from app.domain.transaction.vo import Amount, TransactionType
 
 
 @dataclass(eq=False, slots=True)
-class Transaction(BaseEntity):
+class Transaction:
     """Entity representing a financial transaction."""
 
+    id: UUID = field(default_factory=uuid4)
     user_id: UUID
     account_id: UUID
     type: TransactionType
@@ -17,6 +17,16 @@ class Transaction(BaseEntity):
     occurred_at: date
     category_id: UUID | None = None
     description: str = ""
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+
+    def __eq__(self, obj: object) -> bool:
+        if isinstance(obj, Transaction):
+            return self.id == obj.id
+        return False
+
+    def __hash__(self) -> int:
+        return hash((type(self), self.id))
 
     @classmethod
     def create(
