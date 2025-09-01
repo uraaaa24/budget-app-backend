@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from uuid import UUID, uuid4
 
-from app.domain.transaction.vo import Amount, TransactionType
+from app.domain.transaction.transaction_value_objects import Amount, TransactionType
 
 
 @dataclass(eq=False, slots=True)

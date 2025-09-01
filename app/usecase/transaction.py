@@ -5,7 +5,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.domain.transaction.transaction import Transaction
-from app.domain.transaction.vo import Amount, TransactionType
+from app.domain.transaction.transaction_value_objects import Amount, TransactionType
 from app.infrastructure.transaction.repo import TransactionRepositoryImpl
 
 

@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-from app.domain.category.vo import CategoryName, HexColor
+from app.domain.category.category_value_objects import CategoryName, HexColor
 
 
 @dataclass(eq=False, slots=True)

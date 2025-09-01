@@ -7,7 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
 from app.domain.transaction.transaction import Transaction
-from app.domain.transaction.vo import Amount, TransactionType
+from app.domain.transaction.transaction_value_objects import Amount, TransactionType
 
 
 class TransactionDTO(Base):
