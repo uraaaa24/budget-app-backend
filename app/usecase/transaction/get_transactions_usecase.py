@@ -15,7 +15,8 @@ class GetTransactionsUseCaseImpl(GetTransactionsUseCase):
         self.transaction_repo = transaction_repo
 
     def execute(self, user_id: str) -> list[Transaction]:
-        return self.transaction_repo.find_by_user_id(user_id)
+        transactions = self.transaction_repo.find_by_user_id(user_id)
+        return sorted(transactions, key=lambda t: t.created_at, reverse=True)
 
 
 def new_get_transactions_usecase(
