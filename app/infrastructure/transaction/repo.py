@@ -22,7 +22,7 @@ class TransactionRepositoryImpl(TransactionRepository):
         rows = self.session.execute(select(TransactionDTO)).scalars().all()
         return [row.to_entity() for row in rows]
 
-    def find_by_user_id(self, user_id: UUID) -> list[Transaction]:
+    def find_by_user_id(self, user_id: str) -> list[Transaction]:
         """Retrieve transactions by user ID."""
         rows = (
             self.session.execute(select(TransactionDTO).where(TransactionDTO.user_id == user_id))

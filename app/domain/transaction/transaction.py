@@ -9,8 +9,9 @@ from app.domain.transaction.transaction_value_objects import Amount, Transaction
 class Transaction:
     """Entity representing a financial transaction."""
 
-    user_id: UUID
-    account_id: UUID
+    user_id: str
+    # account_id: UUID
+    account_id: UUID | None  # Temporary: will be implemented later
     type: TransactionType
     amount: Amount
     occurred_at: date
@@ -31,8 +32,9 @@ class Transaction:
     @classmethod
     def create(
         cls,
-        user_id: UUID,
-        account_id: UUID,
+        user_id: str,
+        # account_id: UUID,
+        account_id: UUID | None,  # Temporary: will be implemented later
         type: TransactionType,
         amount: int,
         occurred_at: date,
@@ -52,9 +54,7 @@ class Transaction:
 
     def __post_init__(self):
         """Ensure that the amount is always non-negative."""
-        super().__post_init__()
-
-        if self.amount < 0:
+        if self.amount.value < 0:
             raise ValueError("Transaction amount cannot be negative.")
 
     @property

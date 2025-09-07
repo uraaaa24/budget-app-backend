@@ -34,7 +34,19 @@ tasks:
   migrate:
     desc: Run database migrations
     cmds:
-      - uv run python -m app.infrastructure.db.migrate
+      - uv run alembic upgrade head
+
+  db-connect:
+    desc: Connect to database
+    cmds:
+      - |
+        DB_URL=$(grep "^DATABASE_URL=" .env | cut -d'=' -f2 | sed 's/postgresql+psycopg:/postgresql:/')
+        psql "$DB_URL"
+
+  type-check:
+    desc: Run type checker
+    cmds:
+      - uv run mypy .
 
   clean:
     desc: Remove temporary files
