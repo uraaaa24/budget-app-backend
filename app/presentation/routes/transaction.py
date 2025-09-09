@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, status
 from app.core.auth import get_current_user
 from app.infrastructure.di.injection import (
     get_create_transaction_usecase,
+    get_delete_transaction_usecase,
     get_get_transactions_usecase,
 )
 from app.presentation.schemas.requests.transaction import CreateTransactionRequestSchema
@@ -12,6 +13,7 @@ from app.presentation.schemas.responses.transaction import (
     GetTransactionsResponseSchema,
 )
 from app.usecase.transaction.create_transaction_usecase import CreateTransactionUseCase
+from app.usecase.transaction.delete_transaction_usecase import DeleteTransactionUseCase
 from app.usecase.transaction.get_transactions_usecase import GetTransactionsUseCase
 
 router = APIRouter(tags=["transaction"])
@@ -76,3 +78,14 @@ async def create_transaction(
     except Exception as e:
         print(f"DEBUG: Exception occurred: {e}")
         raise
+
+
+@router.delete("/transactions/{transaction_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_transaction(
+    transaction_id: str,
+    _auth_context=Depends(get_current_user),
+    usecase: DeleteTransactionUseCase = Depends(get_delete_transaction_usecase),
+):
+    """Delete a transaction by ID for the current user"""
+    usecase.execute(transaction_id)
+    return {"message": "Transaction deleted successfully"}

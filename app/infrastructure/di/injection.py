@@ -10,6 +10,10 @@ from app.usecase.transaction.create_transaction_usecase import (
     CreateTransactionUseCase,
     new_create_transaction_usecase,
 )
+from app.usecase.transaction.delete_transaction_usecase import (
+    DeleteTransactionUseCase,
+    new_delete_transaction_usecase,
+)
 from app.usecase.transaction.get_transactions_usecase import (
     GetTransactionsUseCase,
     new_get_transactions_usecase,
@@ -30,3 +34,9 @@ def get_get_transactions_usecase(
     transaction_repo: TransactionRepository = Depends(get_transaction_repository),
 ) -> GetTransactionsUseCase:
     return new_get_transactions_usecase(transaction_repo)
+
+
+def get_delete_transaction_usecase(
+    transaction_repo: TransactionRepository = Depends(get_transaction_repository),
+) -> DeleteTransactionUseCase:
+    return new_delete_transaction_usecase(transaction_repo)
