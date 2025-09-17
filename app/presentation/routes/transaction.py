@@ -5,6 +5,7 @@ from app.infrastructure.di.injection import (
     get_create_transaction_usecase,
     get_delete_transaction_usecase,
     get_get_transactions_usecase,
+    get_put_transaction_usecase,
 )
 from app.presentation.schemas.requests.transaction import CreateTransactionRequestSchema
 from app.presentation.schemas.responses.transaction import (
@@ -15,6 +16,7 @@ from app.presentation.schemas.responses.transaction import (
 from app.usecase.transaction.create_transaction_usecase import CreateTransactionUseCase
 from app.usecase.transaction.delete_transaction_usecase import DeleteTransactionUseCase
 from app.usecase.transaction.get_transactions_usecase import GetTransactionsUseCase
+from app.usecase.transaction.put_tranaction_usecase import PutTransactionUseCase
 
 router = APIRouter(tags=["transaction"])
 
@@ -78,6 +80,19 @@ async def create_transaction(
     except Exception as e:
         print(f"DEBUG: Exception occurred: {e}")
         raise
+
+
+@router.put("/transactions/{transaction_id}", status_code=status.HTTP_200_OK)
+async def update_transaction(
+    transaction_id: str,
+    data: CreateTransactionRequestSchema = None,
+    _auth_context=Depends(get_current_user),
+    usecase: PutTransactionUseCase = Depends(get_put_transaction_usecase),
+):
+    """Update a transaction by ID for the current user"""
+    update_data = data.model_dump()
+    usecase.execute(transaction_id, update_data)
+    return {"message": "Transaction updated successfully"}
 
 
 @router.delete("/transactions/{transaction_id}", status_code=status.HTTP_204_NO_CONTENT)

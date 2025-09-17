@@ -18,6 +18,10 @@ from app.usecase.transaction.get_transactions_usecase import (
     GetTransactionsUseCase,
     new_get_transactions_usecase,
 )
+from app.usecase.transaction.put_tranaction_usecase import (
+    PutTransactionUseCase,
+    new_put_transaction_usecase,
+)
 
 
 def get_transaction_repository(session: Session = Depends(get_db)) -> TransactionRepository:
@@ -28,6 +32,12 @@ def get_create_transaction_usecase(
     transaction_repo: TransactionRepository = Depends(get_transaction_repository),
 ) -> CreateTransactionUseCase:
     return new_create_transaction_usecase(transaction_repo)
+
+
+def get_put_transaction_usecase(
+    transaction_repo: TransactionRepository = Depends(get_transaction_repository),
+) -> PutTransactionUseCase:
+    return new_put_transaction_usecase(transaction_repo)
 
 
 def get_get_transactions_usecase(
