@@ -1,0 +1,55 @@
+name: backend-release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+  packages: write
+  id-token: none
+
+env:
+  IMAGE: ghcr.io/yourusername/budget-app-backend
+  TAG: ${{ github.ref_name }} # v1.2.3
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Use GHCR authentication
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build & Push
+      - name: Build
+        run: docker build -t $IMAGE:$TAG .
+
+      - name: Push
+        run: docker push $IMAGE:$TAG
+
+      # Get digest of the pushed image
+      - name: Resolve digest
+        id: digest
+        run: |
+          DIGEST=$(curl -sI \
+            -H 'Accept: application/vnd.oci.image.manifest.v1+json' \
+            https://ghcr.io/v2/uraaaa24/budget-app-backend/manifests/${TAG} \
+            | awk -F': ' '/Docker-Content-Digest/ {print $2}' | tr -d '\r')
+          echo -n "$DIGEST" > digest.txt
+          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+          echo "Resolved: $DIGEST"
+
+      # Upload digest as artifact
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ env.TAG }}
+          path: digest.txt
