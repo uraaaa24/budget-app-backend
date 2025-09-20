@@ -1,0 +1,14 @@
+version: '3'
+
+tasks:
+  migrate:
+    desc: Run database migrations
+    cmds:
+      - uv run alembic upgrade head
+
+  connect:
+    desc: Connect to database (uses .env DATABASE_URL)
+    cmds:
+      - |
+        DB_URL=$(grep "^DATABASE_URL=" .env | cut -d'=' -f2 | sed 's/postgresql+psycopg:/postgresql:/')
+        psql "$DB_URL"
