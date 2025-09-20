@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from app.domain.transaction.transaction import Transaction
+from app.domain.transaction.transaction_entity import Transaction
 from app.domain.transaction.transaction_repository import TransactionRepository
 
 

@@ -1,8 +1,7 @@
 from abc import abstractmethod
 from datetime import date
-from uuid import UUID
 
-from app.domain.transaction.transaction import Transaction
+from app.domain.transaction.transaction_entity import Transaction
 from app.domain.transaction.transaction_repository import TransactionRepository
 from app.domain.transaction.transaction_value_objects import TransactionType
 

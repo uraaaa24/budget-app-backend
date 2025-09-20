@@ -1,15 +1,28 @@
-# domain/transactions/repositories/transaction_repository.py
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from datetime import date
 from uuid import UUID
 
-from app.domain.base_repo import BaseRepository
-from app.domain.transaction.transaction import Transaction
+from app.domain.transaction.transaction_entity import Transaction
 
 
-class TransactionRepository(BaseRepository[Transaction]):
+class TransactionRepository(ABC):
     """Repository interface for Transaction entities."""
+
+    @abstractmethod
+    def add(self, entity: Transaction) -> None: ...
+
+    @abstractmethod
+    def update(self, entity: Transaction) -> None: ...
+
+    @abstractmethod
+    def find_by_id(self, entity_id: UUID) -> Transaction | None: ...
+
+    @abstractmethod
+    def find_all(self) -> list[Transaction]: ...
+
+    @abstractmethod
+    def remove(self, entity_id: UUID) -> None: ...
 
     @abstractmethod
     def find_by_account_and_period(

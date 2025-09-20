@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
-from app.domain.transaction.transaction import Transaction
+from app.domain.transaction.transaction_entity import Transaction
 from app.domain.transaction.transaction_value_objects import Amount, TransactionType
 
 

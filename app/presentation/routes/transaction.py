@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.auth import get_current_user
 from app.infrastructure.di.injection import (
@@ -10,8 +10,7 @@ from app.infrastructure.di.injection import (
 from app.presentation.schemas.requests.transaction import CreateTransactionRequestSchema
 from app.presentation.schemas.responses.transaction import (
     CreateTransactionResponseSchema,
-    GetTransactionResponseSchema,
-    GetTransactionsResponseSchema,
+    GetTransactionListResponseSchema,
 )
 from app.usecase.transaction.create_transaction_usecase import CreateTransactionUseCase
 from app.usecase.transaction.delete_transaction_usecase import DeleteTransactionUseCase
@@ -21,31 +20,21 @@ from app.usecase.transaction.put_tranaction_usecase import PutTransactionUseCase
 router = APIRouter(tags=["transaction"])
 
 
-@router.get("/transactions", response_model=GetTransactionsResponseSchema)
+@router.get(
+    "/transactions", response_model=GetTransactionListResponseSchema, status_code=status.HTTP_200_OK
+)
 async def get_transactions(
     auth_context=Depends(get_current_user),
     usecase: GetTransactionsUseCase = Depends(get_get_transactions_usecase),
 ):
     """Retrieve transactions for the current user"""
-    transactions = usecase.execute(auth_context.sub)
-
-    transaction_responses = []
-    for transaction in transactions:
-        transaction_responses.append(
-            GetTransactionResponseSchema(
-                id=transaction.id,
-                account_id=transaction.account_id,
-                type=str(transaction.type.value),
-                amount=transaction.amount.value,
-                occurred_at=transaction.occurred_at,
-                category_id=transaction.category_id,
-                description=transaction.description,
-                created_at=transaction.created_at,
-                updated_at=transaction.updated_at,
-            )
-        )
-
-    return GetTransactionsResponseSchema(transactions=transaction_responses)
+    try:
+        transactions = usecase.execute(auth_context.sub)
+        return GetTransactionListResponseSchema.from_entities(transactions)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        ) from e
 
 
 @router.post(

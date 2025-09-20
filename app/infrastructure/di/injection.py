@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.domain.transaction.transaction_repository import TransactionRepository
-from app.infrastructure.transaction.repo import (
+from app.infrastructure.transaction.transaction_repository import (
     new_transaction_repository,
 )
 from app.usecase.transaction.create_transaction_usecase import (

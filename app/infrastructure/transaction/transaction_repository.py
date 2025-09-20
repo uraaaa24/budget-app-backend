@@ -5,9 +5,9 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.domain.transaction.transaction import Transaction
+from app.domain.transaction.transaction_entity import Transaction
 from app.domain.transaction.transaction_repository import TransactionRepository
-from app.infrastructure.transaction.dto import TransactionDTO
+from app.infrastructure.transaction.transaction_dto import TransactionDTO
 
 
 class TransactionRepositoryImpl(TransactionRepository):
