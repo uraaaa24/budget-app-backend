@@ -3,7 +3,7 @@ name: backend-release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*'
 
 permissions:
   contents: read
@@ -11,7 +11,7 @@ permissions:
   id-token: none
 
 env:
-  IMAGE: ghcr.io/yourusername/budget-app-backend
+  IMAGE: ghcr.io/uraaaa24/budget-app-backend
   TAG: ${{ github.ref_name }} # v1.2.3
 
 jobs:
