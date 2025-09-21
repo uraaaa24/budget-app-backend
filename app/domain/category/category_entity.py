@@ -2,17 +2,19 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-from app.domain.category.category_value_objects import CategoryName, HexColor
+from app.domain.category.category_value_objects import CategoryName
+from app.domain.transaction.transaction_value_objects import TransactionType
 
 
 @dataclass(eq=False, slots=True)
 class Category:
     """Entity representing a category in the domain model."""
 
-    id: UUID = field(default_factory=uuid4)
     name: CategoryName
+    type: TransactionType
+    id: UUID = field(default_factory=uuid4)
+    user_id: str | None = None
     description: str = ""
-    color: HexColor | None = None
     is_archived: bool = False
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = field(default_factory=lambda: datetime.now(UTC))

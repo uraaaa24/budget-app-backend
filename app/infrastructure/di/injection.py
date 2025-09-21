@@ -2,9 +2,15 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.domain.category.category_repository import CategoryRepository
 from app.domain.transaction.transaction_repository import TransactionRepository
+from app.infrastructure.category.category_repository import new_category_repository
 from app.infrastructure.transaction.transaction_repository import (
     new_transaction_repository,
+)
+from app.usecase.category.get_categories import (
+    GetCategoryListUseCase,
+    new_get_category_list_usecase,
 )
 from app.usecase.transaction.create_transaction_usecase import (
     CreateTransactionUseCase,
@@ -50,3 +56,13 @@ def get_delete_transaction_usecase(
     transaction_repo: TransactionRepository = Depends(get_transaction_repository),
 ) -> DeleteTransactionUseCase:
     return new_delete_transaction_usecase(transaction_repo)
+
+
+def get_category_repository(session: Session = Depends(get_db)) -> CategoryRepository:
+    return new_category_repository(session)
+
+
+def get_get_category_list_usecase(
+    category_repo: CategoryRepository = Depends(get_category_repository),
+) -> GetCategoryListUseCase:
+    return new_get_category_list_usecase(category_repo)

@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from app.core.database import db
 from app.core.logging import setup_logging
 from app.middleware import RequestLoggingMiddleware
-from app.presentation.routes import health_router, transaction_router
+from app.presentation.routes import category_router, health_router, transaction_router
 
 
 def register_app() -> FastAPI:
@@ -50,5 +50,6 @@ def register_app() -> FastAPI:
     app.add_middleware(RequestLoggingMiddleware)
     app.include_router(health_router)
     app.include_router(transaction_router)
+    app.include_router(category_router)
 
     return app

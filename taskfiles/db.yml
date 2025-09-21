@@ -1,6 +1,10 @@
 version: '3'
 
 tasks:
+  prepare:
+    desc: アプリ内の定義から、マイグレーションファイルを作成する
+    cmds:
+      - uv run alembic revision --autogenerate -m "auto migration"
   migrate:
     desc: Run database migrations
     cmds:
