@@ -24,7 +24,7 @@ from app.usecase.transaction.get_transactions_usecase import (
     GetTransactionsUseCase,
     new_get_transactions_usecase,
 )
-from app.usecase.transaction.put_tranaction_usecase import (
+from app.usecase.transaction.put_transaction_usecase import (
     PutTransactionUseCase,
     new_put_transaction_usecase,
 )

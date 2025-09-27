@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 class CreateTransactionRequestSchema(BaseModel):
     """Schema for creating a new transaction."""
 
-    model_config = ConfigDict(extra="forbid")  # 余計なキーは422
+    model_config = ConfigDict(extra="forbid")
 
     # account_id: UUID = Field(..., description="Account ID for the transaction")
     type: Literal["income", "expense"] = Field(
@@ -30,20 +30,19 @@ class CreateTransactionRequestSchema(BaseModel):
 
     @field_validator("occurred_at", mode="before")
     @classmethod
-    def parse_to_date(cls, v):
-        if isinstance(v, date) and not isinstance(v, datetime):
-            return v
+    def parse_to_datetime(cls, v):
         if isinstance(v, datetime):
-            return v.date()
+            return v
         if isinstance(v, str):
             s = v.strip()
-            try:
-                return date.fromisoformat(s)  # "YYYY-MM-DD"
-            except ValueError:
-                if s.endswith("Z"):
-                    s = s[:-1] + "+00:00"
-                return datetime.fromisoformat(s).date()
-        raise TypeError("occurred_at must be ISO date or ISO datetime")
+            if s.endswith("Z"):
+                s = s[:-1] + "+00:00"
+            return datetime.fromisoformat(s)
+        from datetime import time
+
+        if isinstance(v, date):
+            return datetime.combine(v, time(0, 0))
+        raise TypeError("occurred_at must be ISO datetime or date")
 
     @field_validator("category_id", mode="before")
     @classmethod
@@ -67,13 +66,12 @@ class CreateTransactionRequestSchema(BaseModel):
     @field_validator("occurred_at")
     @classmethod
     def no_future_date(cls, v: datetime) -> datetime:
-        # 比較は日付同士に統一（UTC基準）
-        today_utc = datetime.now(UTC).date()
-        if v.tzinfo is None:
-            occ_date = v.date()
-        else:
-            occ_date = v.astimezone(UTC).date()
-
-        if occ_date > today_utc:
+        # 比較は **日付** 同士（UTC基準）で
+        vv = v if v.tzinfo else v.replace(tzinfo=UTC)
+        if vv.astimezone(UTC).date() > datetime.now(UTC).date():
             raise ValueError("occurred_at cannot be in the future")
         return v
+
+
+class UpdateTransactionRequestSchema(CreateTransactionRequestSchema):
+    """Schema for updating an existing transaction."""

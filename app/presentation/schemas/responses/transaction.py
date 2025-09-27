@@ -50,6 +50,10 @@ class CreateTransactionResponseSchema(TransactionSchema):
     """Schema for transaction creation response."""
 
 
+class UpdateTransactionResponseSchema(TransactionSchema):
+    """Schema for transaction update response."""
+
+
 class GetTransactionListResponseSchema(BaseModel):
     """Schema for list of transactions in response."""
 

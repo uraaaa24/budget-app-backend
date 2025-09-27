@@ -46,8 +46,8 @@ class TransactionRepositoryImpl(TransactionRepository):
 
         row.user_id = entity.user_id
         row.account_id = entity.account_id
-        row.type = entity.type
-        row.amount = entity.amount
+        row.type = entity.type.value
+        row.amount = entity.amount.value
         row.occurred_at = entity.occurred_at
         row.category_id = entity.category_id
         row.description = entity.description
