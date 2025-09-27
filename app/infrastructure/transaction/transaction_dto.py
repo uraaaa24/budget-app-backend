@@ -17,7 +17,9 @@ class TransactionDTO(Base):
 
     id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
     user_id: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
-    account_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), index=True, nullable=False)
+    account_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), index=True, nullable=True
+    )
     type: Mapped[str] = mapped_column(String(7), nullable=False)
     amount: Mapped[int] = mapped_column(nullable=False)
     occurred_at: Mapped[date] = mapped_column(nullable=False, index=True)

@@ -1,6 +1,7 @@
 from doctest import debug
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, logger, status
+from pydantic import ValidationError
 
 from app.core.auth import get_current_user
 from app.infrastructure.di.injection import (
@@ -43,6 +44,9 @@ async def get_transactions(
     "/transactions",
     response_model=CreateTransactionResponseSchema,
     status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_400_BAD_REQUEST: {"description": "Bad Request"},
+    },
 )
 async def create_transaction(
     data: CreateTransactionRequestSchema,
@@ -51,26 +55,41 @@ async def create_transaction(
 ):
     """Create a new transaction for the current user"""
     try:
-        print(f"DEBUG: Parsed data: {data}")  # Debug parsed data
-
-        # Convert Pydantic model to dict for UseCase
-        transaction_data = {
-            # "account_id": str(data.account_id),
-            "type": data.type,
-            "amount": data.amount,
-            "occurred_at": data.occurred_at.isoformat()
-            if hasattr(data.occurred_at, "isoformat")
-            else str(data.occurred_at),
-            # "category_id": str(data.category_id) if data.category_id else None,
-            "description": data.description,
-        }
-
+        transaction_data = data.model_dump()
         result = usecase.execute(auth_context.sub, transaction_data)
-
-        return CreateTransactionResponseSchema(transaction_id=result)
+        return CreateTransactionResponseSchema.from_entity(result)
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve)) from ve
+    except ValidationError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=ve.errors()
+        ) from ve
     except Exception as e:
-        print(f"DEBUG: Exception occurred: {e}")
-        raise
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        ) from e
+
+    # try:
+    #     print(f"DEBUG: Parsed data: {data}")  # Debug parsed data
+
+    #     # Convert Pydantic model to dict for UseCase
+    #     transaction_data = {
+    #         # "account_id": str(data.account_id),
+    #         "type": data.type,
+    #         "amount": data.amount,
+    #         "occurred_at": data.occurred_at.isoformat()
+    #         if hasattr(data.occurred_at, "isoformat")
+    #         else str(data.occurred_at),
+    #         # "category_id": str(data.category_id) if data.category_id else None,
+    #         "description": data.description,
+    #     }
+
+    #     result = usecase.execute(auth_context.sub, transaction_data)
+
+    #     return CreateTransactionResponseSchema(transaction_id=result)
+    # except Exception as e:
+    #     print(f"DEBUG: Exception occurred: {e}")
+    #     raise
 
 
 @router.put("/transactions/{transaction_id}", status_code=status.HTTP_200_OK)
