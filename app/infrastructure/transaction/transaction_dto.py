@@ -7,7 +7,11 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
 from app.domain.transaction.transaction_entity import Transaction
-from app.domain.transaction.transaction_value_objects import Amount, TransactionType
+from app.domain.transaction.transaction_value_objects import (
+    Amount,
+    CategorySummary,
+    TransactionType,
+)
 
 
 class TransactionDTO(Base):
@@ -30,8 +34,15 @@ class TransactionDTO(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
-    def to_entity(self) -> Transaction:
+    def to_entity(self, category_name: str | None = None) -> Transaction:
         """Convert DTO to Transaction entity."""
+
+        category = (
+            CategorySummary(id=self.category_id, name=category_name)
+            if self.category_id is not None
+            else None
+        )
+
         return Transaction(
             id=self.id,
             user_id=self.user_id,
@@ -39,7 +50,7 @@ class TransactionDTO(Base):
             type=TransactionType(self.type),
             amount=Amount(self.amount),
             occurred_at=self.occurred_at,
-            category_id=self.category_id,
+            category=category,
             description=self.description or "",
             created_at=self.created_at,
             updated_at=self.updated_at,
@@ -55,7 +66,7 @@ class TransactionDTO(Base):
             type=transaction.type.value,
             amount=transaction.amount.value,
             occurred_at=transaction.occurred_at,
-            category_id=transaction.category_id,
+            category_id=transaction.category.id if transaction.category else None,
             description=transaction.description,
             created_at=transaction.created_at,
             updated_at=transaction.updated_at,

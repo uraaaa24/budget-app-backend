@@ -2,7 +2,11 @@ from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from uuid import UUID, uuid4
 
-from app.domain.transaction.transaction_value_objects import Amount, TransactionType
+from app.domain.transaction.transaction_value_objects import (
+    Amount,
+    CategorySummary,
+    TransactionType,
+)
 
 
 @dataclass(eq=False, slots=True)
@@ -16,7 +20,7 @@ class Transaction:
     amount: Amount
     occurred_at: date
     id: UUID = field(default_factory=uuid4)
-    category_id: UUID | None = None
+    category: CategorySummary | None = None
     description: str = ""
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = field(default_factory=lambda: datetime.now(UTC))
@@ -42,13 +46,15 @@ class Transaction:
         description: str = "",
     ) -> "Transaction":
         """Factory method to create a new transaction."""
+        category = CategorySummary.from_id(category_id) if category_id else None
+
         return cls(
             user_id=user_id,
             account_id=account_id,
             type=type,
             amount=Amount(amount),
             occurred_at=occurred_at,
-            category_id=category_id,
+            category=category,
             description=description,
         )
 
@@ -62,3 +68,7 @@ class Transaction:
         """Return the amount with a sign based on the transaction type."""
         base = self.amount.value
         return base if self.type.is_income else -base
+
+    def change_category(self, category_id: UUID, name: str | None = None) -> None:
+        self.category = CategorySummary(id=category_id, name=name)
+        self.updated_at = datetime.now(UTC)

@@ -1,55 +1,70 @@
+import json
 import logging
-import sys
+import os
+from typing import Any
 
-from app.core.config import settings
-
-
-def setup_logging() -> logging.Logger:
-    """Setup logging configuration"""
-    log_level = logging.DEBUG if settings.DEBUG else logging.INFO
-
-    log_format = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-    if settings.DEBUG:
-        log_format = "%(asctime)s [%(levelname)s] %(name)s.%(funcName)s:%(lineno)d: %(message)s"
-
-    logging.basicConfig(
-        level=log_level,
-        format=log_format,
-        datefmt="%H:%M:%S",
-        stream=sys.stdout,
-        force=True,
-    )
-
-    _suppress_noisy_loggers()
-
-    _configure_sqlalchemy_logging()
-
-    logger = logging.getLogger("app")
-    logger.info(f"🚀 Starting Budget App (Debug: {settings.DEBUG})")
-
-    return logger
+from app.middleware.logging import RequestIdLogFilter
 
 
-def _suppress_noisy_loggers():
-    """Suppress noisy loggers that clutter the output"""
-    noisy_loggers = [
-        "uvicorn.access",
-        "asyncio",
-        "urllib3.connectionpool",
-        "httpx",
-    ]
+class JsonFormatter(logging.Formatter):
+    DEFAULT_KEYS = {
+        "level": "level",
+        "logger": "logger",
+        "message": "msg",
+        "time": "asctime",
+        "module": "module",
+        "funcName": "func",
+        "lineno": "line",
+        "request_id": "request_id",
+        "user_id": "user_id",
+    }
 
-    for logger_name in noisy_loggers:
-        logging.getLogger(logger_name).setLevel(logging.WARNING)
+    def format(self, record: logging.LogRecord) -> str:
+        base = {
+            "level": record.levelname,
+            "logger": record.name,
+            "msg": record.getMessage(),
+            "asctime": self.formatTime(record, self.datefmt),
+            "module": record.module,
+            "func": record.funcName,
+            "line": record.lineno,
+        }
+        # extra をすべてJSONに落とす
+        # record.__dict__ から「既知の属性」を除いたものが extra 相当
+        known = set(vars(logging.makeLogRecord({})).keys())
+        data: dict[str, Any] = {}
+        for k, v in record.__dict__.items():
+            if k not in known and not k.startswith("_"):
+                # pydanticのValidationErrorなどでシリアライズ失敗を避ける
+                try:
+                    json.dumps(v)
+                    data[k] = v
+                except Exception:
+                    data[k] = str(v)
 
+        base.update(data)
+        return json.dumps(base, ensure_ascii=False)
+
+
+def setup_logging() -> None:
+    # ルートロガーをJSONに統一
+    root = logging.getLogger()
+    root.setLevel(os.getenv("LOG_LEVEL", "INFO").upper())
+
+    # 既存ハンドラをクリア（uvicorn等が先に設定している場合を上書き）
+    for h in list(root.handlers):
+        root.removeHandler(h)
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(JsonFormatter())
+    root.addHandler(handler)
+
+    # リクエストID／ユーザIDを全ログに付与
+    root.addFilter(RequestIdLogFilter())
+
+    # よく使うロガーのレベル
+    logging.getLogger("uvicorn").setLevel(logging.INFO)
     logging.getLogger("uvicorn.error").setLevel(logging.INFO)
-
-
-def _configure_sqlalchemy_logging():
-    """Configure SQLAlchemy logging based on debug mode"""
-    sqlalchemy_logger = logging.getLogger("sqlalchemy.engine")
-
-    if settings.DEBUG:
-        sqlalchemy_logger.setLevel(logging.INFO)
-    else:
-        sqlalchemy_logger.setLevel(logging.ERROR)
+    logging.getLogger("uvicorn.access").setLevel(logging.INFO)
+    logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)  # SQLログもrequest_id付与される
+    logging.getLogger("app").setLevel(logging.INFO)

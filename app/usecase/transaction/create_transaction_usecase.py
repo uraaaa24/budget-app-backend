@@ -9,7 +9,7 @@ from app.domain.transaction.transaction_value_objects import TransactionType
 
 class CreateTransactionUseCase:
     @abstractmethod
-    def execute(self, user_id: str, data: dict) -> str:
+    def execute(self, user_id: str, data: dict) -> Transaction:
         pass
 
 
@@ -30,18 +30,7 @@ class CreateTransactionUseCaseImpl(CreateTransactionUseCase):
         )
 
         self.transaction_repo.add(transaction)
-        return Transaction(
-            user_id=user_id,
-            account_id=transaction.account_id,
-            type=transaction.type,
-            amount=transaction.amount,
-            occurred_at=transaction.occurred_at,
-            category_id=transaction.category_id,
-            description=transaction.description,
-            id=transaction.id,
-            created_at=transaction.created_at,
-            updated_at=transaction.updated_at,
-        )
+        return transaction
 
 
 def new_create_transaction_usecase(

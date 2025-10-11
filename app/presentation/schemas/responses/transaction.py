@@ -7,6 +7,11 @@ from pydantic import BaseModel, Field, conint, field_validator
 from app.domain.transaction.transaction_entity import Transaction
 
 
+class CategorySummary(BaseModel):
+    id: UUID = Field(..., description="Unique identifier of the category")
+    name: str = Field(..., description="Name of the category")
+
+
 class TransactionSchema(BaseModel):
     id: UUID = Field(..., description="Unique identifier of the transaction")
 
@@ -22,7 +27,9 @@ class TransactionSchema(BaseModel):
 
     occurred_at: date = Field(..., description="Date when the transaction occurred")
 
-    category_id: UUID | None = Field(None, description="Category ID (optional)")
+    category: CategorySummary | None = Field(
+        None, description="Category associated with the transaction (optional)"
+    )
 
     description: str = Field("", description="Description of the transaction")
 
@@ -39,19 +46,13 @@ class TransactionSchema(BaseModel):
             type=str(entity.type.value),
             amount=entity.amount.value,
             occurred_at=entity.occurred_at,
-            category_id=entity.category_id,
+            category=CategorySummary(id=entity.category.id, name=entity.category.name)
+            if entity.category
+            else None,
             description=entity.description,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )
-
-
-class CreateTransactionResponseSchema(TransactionSchema):
-    """Schema for transaction creation response."""
-
-
-class UpdateTransactionResponseSchema(TransactionSchema):
-    """Schema for transaction update response."""
 
 
 class GetTransactionListResponseSchema(BaseModel):
@@ -65,3 +66,17 @@ class GetTransactionListResponseSchema(BaseModel):
         return GetTransactionListResponseSchema(
             transactions=[TransactionSchema.from_entity(e) for e in entities]
         )
+
+
+class CreateTransactionResponseSchema(BaseModel):
+    """Schema for transaction creation response."""
+
+    id: UUID = Field(..., description="Unique identifier of the created transaction")
+    message: str = Field(..., description="Response message")
+
+
+class UpdateTransactionResponseSchema(BaseModel):
+    """Schema for transaction update response."""
+
+    id: UUID = Field(..., description="Unique identifier of the updated transaction")
+    message: str = Field(..., description="Response message")

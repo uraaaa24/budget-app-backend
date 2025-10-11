@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import StrEnum
+from uuid import UUID
 
 
 @dataclass(frozen=True, slots=True)
@@ -14,6 +15,18 @@ class Amount:
             raise TypeError("Amount must be an integer.")
         if self.value < 0:
             raise ValueError("Amount must be a positive integer.")
+
+
+@dataclass(frozen=True, slots=True)
+class CategorySummary:
+    """Value object representing a summary of transactions by category."""
+
+    id: str
+    name: str
+
+    @classmethod
+    def from_id(cls, category_id: UUID) -> "CategorySummary":
+        return cls(id=category_id, name=None)
 
 
 class TransactionType(StrEnum):

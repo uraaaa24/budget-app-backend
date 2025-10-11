@@ -59,7 +59,10 @@ async def create_transaction(
     try:
         transaction_data = data.model_dump()
         result = usecase.execute(auth_context.sub, transaction_data)
-        return CreateTransactionResponseSchema.from_entity(result)
+        return CreateTransactionResponseSchema(
+            id=str(result.id),
+            message="Transaction created successfully",
+        )
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve)) from ve
     except ValidationError as ve:
@@ -88,7 +91,10 @@ async def update_transaction(
     try:
         update_data = data.model_dump()
         result = usecase.execute(auth_context.sub, transaction_id, update_data)
-        return UpdateTransactionResponseSchema.from_entity(result)
+        return UpdateTransactionResponseSchema(
+            id=str(result.id),
+            message="Transaction updated successfully",
+        )
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve)) from ve
     except ValidationError as ve:

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.domain.transaction.transaction_entity import Transaction
 from app.domain.transaction.transaction_repository import TransactionRepository
+from app.infrastructure.category.category_dto import CategoryDTO
 from app.infrastructure.transaction.transaction_dto import TransactionDTO
 
 
@@ -24,12 +25,13 @@ class TransactionRepositoryImpl(TransactionRepository):
 
     def find_by_user_id(self, user_id: str) -> list[Transaction]:
         """Retrieve transactions by user ID."""
-        rows = (
-            self.session.execute(select(TransactionDTO).where(TransactionDTO.user_id == user_id))
-            .scalars()
-            .all()
+        stmt = (
+            select(TransactionDTO, CategoryDTO.name)
+            .join(CategoryDTO, TransactionDTO.category_id == CategoryDTO.id, isouter=True)
+            .where(TransactionDTO.user_id == user_id)
         )
-        return [row.to_entity() for row in rows]
+        rows = self.session.execute(stmt).all()
+        return [dto.to_entity(category_name) for (dto, category_name) in rows]
 
     def add(self, entity: Transaction) -> None:
         """Add a new transaction."""
@@ -49,7 +51,7 @@ class TransactionRepositoryImpl(TransactionRepository):
         row.type = entity.type.value
         row.amount = entity.amount.value
         row.occurred_at = entity.occurred_at
-        row.category_id = entity.category_id
+        row.category_id = entity.category.id if entity.category else None
         row.description = entity.description
         row.created_at = entity.created_at
         row.updated_at = entity.updated_at
