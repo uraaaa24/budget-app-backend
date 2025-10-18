@@ -14,4 +14,4 @@ RUN uv sync --frozen --no-dev
 # Copy application code
 COPY . /code/
 
-CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uv", "run", "--no-dev", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "${PORT:-8080}"]
