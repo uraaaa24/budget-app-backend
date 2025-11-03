@@ -10,7 +10,8 @@ WORKDIR /code
 COPY ./pyproject.toml ./uv.lock /code/
 
 # Install dependencies
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev \
+ && uv pip install --system fastapi uvicorn
 
 # Create virtual environment
 ENV PATH="/code/.venv/bin:${PATH}"
@@ -22,4 +23,4 @@ ENV PORT=8080
 COPY . /code/
 
 # Start the application
-CMD ["sh", "-lc", "exec python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT"]
+CMD ["uv", "run", "--no-sync", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
