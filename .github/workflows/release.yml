@@ -8,11 +8,15 @@ on:
 permissions:
   contents: read
   packages: write
-  id-token: none
+  id-token: write
 
 env:
-  IMAGE: ghcr.io/uraaaa24/budget-app-backend
   TAG: ${{ github.ref_name }} # v1.2.3
+  GHCR_IMAGE: ghcr.io/uraaaa24/budget-app-backend
+  GCP_PROJECT_ID: budget-app-474803
+  GCP_REGION: asia-northeast1
+  AR_REPO: fastapi-images
+  AR_IMAGE: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.AR_REPO }}/fastapi-app
 
 jobs:
   build-and-push:
@@ -20,35 +24,56 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Use GHCR authentication
+      # GHCR login
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build & Push
-      - name: Build
-        run: docker build -t $IMAGE:$TAG .
+      # GCP OIDC auth
+      - id: auth
+        name: Auth to Google Cloud (OIDC)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}   # ex: projects/xxx/locations/global/workloadIdentityPools/xxx/providers/github
+          service_account: ${{ secrets.GCP_ARTIFACT_SA }}               # ex: ar-writer@budget-app-474803.iam.gserviceaccount.com
 
-      - name: Push
-        run: docker push $IMAGE:$TAG
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
 
-      # Get digest of the pushed image
-      - name: Resolve digest
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev -q
+
+      # Build once, tag twice
+      - name: Build (local tag)
+        run: docker build -t app:${{ env.TAG }} .
+
+      - name: Tag images for GHCR and AR
+        run: |
+          docker tag app:${TAG} ${GHCR_IMAGE}:${TAG}
+          docker tag app:${TAG} ${AR_IMAGE}:${TAG}
+
+      - name: Push to GHCR
+        run: docker push ${GHCR_IMAGE}:${TAG}
+
+      - name: Push to Artifact Registry
+        run: docker push ${AR_IMAGE}:${TAG}
+
+      # Get digest from AR
+      - name: Resolve digest from Artifact Registry
         id: digest
         run: |
-          DIGEST=$(curl -sI \
-            -H 'Accept: application/vnd.oci.image.manifest.v1+json' \
-            https://ghcr.io/v2/uraaaa24/budget-app-backend/manifests/${TAG} \
-            | awk -F': ' '/Docker-Content-Digest/ {print $2}' | tr -d '\r')
+          DIGEST=$(gcloud artifacts docker images describe \
+            "${AR_IMAGE}:${TAG}" \
+            --project="${GCP_PROJECT_ID}" \
+            --format='value(image_summary.digest)')
           echo -n "$DIGEST" > digest.txt
           echo "digest=$DIGEST" >> $GITHUB_OUTPUT
-          echo "Resolved: $DIGEST"
+          echo "Resolved: ${AR_IMAGE}@${DIGEST}"
 
-      # Upload digest as artifact
-      - name: Upload artifact
+      - name: Upload artifact (digest)
         uses: actions/upload-artifact@v4
         with:
           name: digest-${{ env.TAG }}
