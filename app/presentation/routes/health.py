@@ -31,8 +31,6 @@ async def db_health_check():
 @router.get("/health/db/info")
 async def db_info():
     """データベース接続情報を返す（デバッグ用）"""
-    import os
-
     try:
         # URLをパース
         parsed = urlparse(settings.DATABASE_URL)
@@ -45,8 +43,6 @@ async def db_info():
         )
 
         return {
-            "app_env": os.getenv("APP_ENV", "not set"),
-            "debug": settings.DEBUG,
             "database_url": masked_url,
             "host": parsed.hostname,
             "port": parsed.port,

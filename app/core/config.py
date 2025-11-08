@@ -1,10 +1,11 @@
-import os
+from typing import Literal
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     DEBUG: bool = False
+    ENV: Literal["dev", "prod"] = "dev"
     DATABASE_URL: str
 
     # clerk
@@ -12,15 +13,6 @@ class Settings(BaseSettings):
     CLERK_JWKS_URL: str
     CLERK_SECRET_KEY: str
     CLERK_AUDIENCE: str
-
-    model_config = SettingsConfigDict(
-        # 本番環境では環境変数のみを使用し、.envファイルは読み込まない
-        env_file=".env" if os.getenv("APP_ENV") != "prod" else None,
-        env_file_encoding="utf-8",
-        case_sensitive=True,
-        env_prefix="",
-        extra="ignore",
-    )
 
 
 settings = Settings()
