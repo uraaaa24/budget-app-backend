@@ -28,9 +28,7 @@ def register_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    origins = [
-        "http://localhost:3000",
-    ]
+    origins = ["http://localhost:3000", "https://budget-app-frontend-mu.vercel.app"]
 
     app.add_middleware(
         CORSMiddleware,
