@@ -20,7 +20,7 @@ ENV PATH="/code/.venv/bin:${PATH}"
 ENV PORT=8080
 
 # Copy application code
-COPY . /code/
+COPY ./app /code/app
 
 # Start the application
 CMD ["uv", "run", "--no-sync", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

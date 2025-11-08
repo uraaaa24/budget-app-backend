@@ -20,10 +20,11 @@ coverage.xml
 *.cover
 
 # Environment and config
+# CRITICAL: Never include .env files in Docker images
+# These files may contain sensitive credentials
 .env
-.env.local
-.env.production
-.env.test
+.env*
+*.env
 
 # IDE and editors
 .vscode/

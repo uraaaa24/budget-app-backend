@@ -49,6 +49,16 @@ jobs:
       - name: Build once
         run: docker build -t app:${TAG} .
 
+      - name: Verify .env files are not in the image
+        run: |
+          echo "Checking if .env files are included in the Docker image..."
+          if docker run --rm app:${TAG} sh -c 'test -f /code/.env || test -f /code/.env.local || test -f /code/.env.production'; then
+            echo "ERROR: .env file found in Docker image!"
+            exit 1
+          else
+            echo "OK: No .env files found in Docker image"
+          fi
+
       - name: Tag for GHCR and AR
         run: |
           docker tag app:${TAG} ${GHCR_IMAGE}:${TAG}
