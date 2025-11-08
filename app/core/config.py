@@ -1,3 +1,5 @@
+import os
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,10 +14,10 @@ class Settings(BaseSettings):
     CLERK_AUDIENCE: str
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        # 本番環境では環境変数のみを使用し、.envファイルは読み込まない
+        env_file=".env" if os.getenv("APP_ENV") != "prod" else None,
         env_file_encoding="utf-8",
         case_sensitive=True,
-        # 環境変数を.envファイルより優先させる（これがデフォルトだが明示的に設定）
         env_prefix="",
         extra="ignore",
     )
