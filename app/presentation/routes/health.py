@@ -1,6 +1,10 @@
+import re
+from urllib.parse import urlparse
+
 from fastapi import APIRouter, HTTPException
 from starlette.concurrency import run_in_threadpool
 
+from app.core.config import settings
 from app.core.database import db
 
 router = APIRouter(tags=["health"])
@@ -22,3 +26,31 @@ async def db_health_check():
         return {"status": "ok", "database": {"status": "ok"}}
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Database connection failed: {str(e)}") from e
+
+
+@router.get("/health/db/info")
+async def db_info():
+    """データベース接続情報を返す（デバッグ用）"""
+    try:
+        # URLをパース
+        parsed = urlparse(settings.DATABASE_URL)
+
+        # パスワードをマスク
+        masked_url = re.sub(
+            r'://([^:]+):([^@]+)@',
+            r'://\1:****@',
+            settings.DATABASE_URL
+        )
+
+        return {
+            "database_url": masked_url,
+            "host": parsed.hostname,
+            "port": parsed.port,
+            "database": parsed.path.lstrip('/') if parsed.path else None,
+            "username": parsed.username,
+            "scheme": parsed.scheme,
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to parse database URL: {str(e)}"
+        ) from e

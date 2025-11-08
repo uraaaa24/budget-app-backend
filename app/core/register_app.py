@@ -1,3 +1,5 @@
+import logging
+import re
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -5,10 +7,13 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.core.config import settings
 from app.core.database import db
 from app.core.logging import setup_logging
 from app.middleware import RequestLoggingMiddleware
 from app.presentation.routes import category_router, health_router, transaction_router
+
+logger = logging.getLogger(__name__)
 
 
 def register_app() -> FastAPI:
@@ -18,6 +23,15 @@ def register_app() -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        # データベースURLをログ出力（パスワードを隠す）
+        masked_url = re.sub(
+            r'://([^:]+):([^@]+)@',
+            r'://\1:****@',
+            settings.DATABASE_URL
+        )
+        logger.info(f"Starting application with DATABASE_URL: {masked_url}")
+        logger.info(f"Database connection test: {'OK' if db.ping() else 'FAILED'}")
+
         yield
         db.dispose()
 
