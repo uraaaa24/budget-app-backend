@@ -11,7 +11,12 @@ from app.core.config import settings
 from app.core.database import db
 from app.core.logging import setup_logging
 from app.middleware import RequestLoggingMiddleware
-from app.presentation.routes import category_router, health_router, transaction_router
+from app.presentation.routes import (
+    category_router,
+    dashboard_router,
+    health_router,
+    transaction_router,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -63,5 +68,6 @@ def register_app() -> FastAPI:
     app.include_router(health_router)
     app.include_router(transaction_router)
     app.include_router(category_router)
+    app.include_router(dashboard_router)  # Add dashboard router
 
     return app

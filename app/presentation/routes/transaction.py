@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, logger, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import ValidationError
 
 from app.core.auth import get_current_user
@@ -39,6 +39,7 @@ async def get_transactions(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
         ) from e
 
 
@@ -72,6 +73,7 @@ async def create_transaction(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
         ) from e
 
 
@@ -104,6 +106,7 @@ async def update_transaction(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
         ) from e
 
 

@@ -1,26 +1,26 @@
 from abc import ABC, abstractmethod
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID
 
-from app.domain.transaction.transaction_entity import Transaction  # 型ヒント用(任意)
+from app.domain.transaction.transaction_entity import Transaction
 from app.domain.transaction.transaction_repository import TransactionRepository
 from app.domain.transaction.transaction_value_objects import Amount, TransactionType
 
 
 class PutTransactionUseCase(ABC):
     @abstractmethod
-    def execute(self, user_id: str, transaction_id: str, data: dict) -> Transaction: ...
+    def execute(self, user_id: str, transaction_id: str, data: dict[str, Any]) -> Transaction: ...
 
 
 class PutTransactionUseCaseImpl(PutTransactionUseCase):
     def __init__(self, transaction_repo: TransactionRepository):
         self.transaction_repo = transaction_repo
 
-    def execute(self, user_id: str, transaction_id: str, data: dict) -> Transaction:
-        # 1) IDをUUIDへ（Repository IFが UUID を期待しているため）
+    def execute(self, user_id: str, transaction_id: str, data: dict[str, Any]) -> Transaction:
         try:
             tx_id = UUID(transaction_id)
-        except Exception as e:
+        except ValueError as e:
             raise ValueError("Invalid transaction_id") from e
 
         transaction = self.transaction_repo.find_by_id(tx_id)
@@ -30,29 +30,30 @@ class PutTransactionUseCaseImpl(PutTransactionUseCase):
         if transaction.user_id != user_id:
             raise ValueError("Access denied: Transaction does not belong to current user")
 
-        def to_date(v: date | datetime) -> date:
-            return v.date() if isinstance(v, datetime) else v
+        if "type" in data:
+            transaction.type = TransactionType(data["type"])
 
-        updaters: dict[str, callable] = {
-            "type": TransactionType,
-            "amount": lambda v: Amount(int(v)),
-            "occurred_at": to_date,
-            "description": lambda v: v or "",
-        }
+        if "amount" in data:
+            transaction.amount = Amount(int(data["amount"]))
 
-        for field, conv in updaters.items():
-            if field in data:
-                setattr(transaction, field, conv(data[field]))
+        if "occurred_at" in data:
+            occurred_at = data["occurred_at"]
+            transaction.occurred_at = (
+                occurred_at.date() if isinstance(occurred_at, datetime) else occurred_at
+            )
+
+        if "description" in data:
+            transaction.description = data["description"] or ""
 
         if "category_id" in data:
-            cid = data["category_id"]
-            if cid in (None, "", "null"):
+            category_id = data["category_id"]
+            if category_id is None or category_id in ("", "null"):
                 transaction.category = None
             else:
-                transaction.change_category(UUID(str(cid)))
+                uuid_id = category_id if isinstance(category_id, UUID) else UUID(str(category_id))
+                transaction.change_category(uuid_id)
 
         transaction.updated_at = datetime.now(UTC)
-
         self.transaction_repo.update(transaction)
         return transaction
 

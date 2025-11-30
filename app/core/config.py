@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     ENV: Literal["dev", "prod"] = "dev"
     DATABASE_URL: str
+    ENV: Literal["dev", "prod"] = "dev"
 
     # clerk
     CLERK_ISSUER: str

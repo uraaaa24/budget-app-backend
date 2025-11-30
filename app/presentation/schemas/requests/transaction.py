@@ -1,8 +1,11 @@
 from datetime import UTC, date, datetime, timezone
 from typing import Literal
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+JST = ZoneInfo("Asia/Tokyo")
 
 
 class CreateTransactionRequestSchema(BaseModel):
@@ -66,9 +69,15 @@ class CreateTransactionRequestSchema(BaseModel):
     @field_validator("occurred_at")
     @classmethod
     def no_future_date(cls, v: datetime) -> datetime:
-        # 比較は **日付** 同士（UTC基準）で
-        vv = v if v.tzinfo else v.replace(tzinfo=UTC)
-        if vv.astimezone(UTC).date() > datetime.now(UTC).date():
+        if v.tzinfo is None:
+            v_local = v.replace(tzinfo=JST)
+        else:
+            v_local = v.astimezone(JST)
+
+        occurred_date = v_local.date()
+        today_local = datetime.now(JST).date()
+
+        if occurred_date > today_local:
             raise ValueError("occurred_at cannot be in the future")
         return v
 

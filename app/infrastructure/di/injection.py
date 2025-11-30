@@ -3,14 +3,20 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.domain.category.category_repository import CategoryRepository
+from app.domain.dashboard.dashboard_repository import DashboardSuammaryRepository
 from app.domain.transaction.transaction_repository import TransactionRepository
 from app.infrastructure.category.category_repository import new_category_repository
+from app.infrastructure.dasoboard.dashboard_repository import new_dashboard_summary_repository
 from app.infrastructure.transaction.transaction_repository import (
     new_transaction_repository,
 )
 from app.usecase.category.get_categories import (
     GetCategoryListUseCase,
     new_get_category_list_usecase,
+)
+from app.usecase.dashboard.get_dashboard_summary_usecase import (
+    GetDashboardSummaryUseCase,
+    new_get_dashboard_summary_usecase,
 )
 from app.usecase.transaction.create_transaction_usecase import (
     CreateTransactionUseCase,
@@ -28,6 +34,18 @@ from app.usecase.transaction.put_transaction_usecase import (
     PutTransactionUseCase,
     new_put_transaction_usecase,
 )
+
+
+def get_dasyboard_summary_repository(
+    session: Session = Depends(get_db),
+) -> DashboardSuammaryRepository:
+    return new_dashboard_summary_repository(session)
+
+
+def get_dashboard_summary_usecase(
+    dashboard_repo: DashboardSuammaryRepository = Depends(get_dasyboard_summary_repository),
+) -> GetDashboardSummaryUseCase:
+    return new_get_dashboard_summary_usecase(dashboard_repo)
 
 
 def get_transaction_repository(session: Session = Depends(get_db)) -> TransactionRepository:
