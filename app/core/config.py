@@ -15,5 +15,9 @@ class Settings(BaseSettings):
     CLERK_SECRET_KEY: str
     CLERK_AUDIENCE: str
 
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+
 
 settings = Settings()
